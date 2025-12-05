@@ -5,7 +5,7 @@ import crawler
 url_tree = dict()
 
 def main():
-    methods = [print, fuzzing, crawling]
+    methods = [print, fuzzing, crawling, print_url_tree, print_params]
 
     option = 99
     parser = argparse.ArgumentParser(description="ShingekiSuite")
@@ -23,17 +23,14 @@ def main():
             
 
 def print_menu():
-    print("Available URLs")
-    print_url_tree(url_tree)
 
     print("1) Fuzz")
     print("2) Crawl")
-    print("3) Print params")
+    print("3) Show available URLs")
+    print("4) Print params")
     print("0) Exit")
 
 def fuzzing():
-    print("Available URLs: ")
-    print_url_tree(url_tree)
     target_url = search_tree(input("Target URL: "), url_tree)
     wordlist_path = input("Wordlist: ")
     fuzzer.fuzz(target_url["url"], wordlist_path)
@@ -42,7 +39,7 @@ def crawling():
     target_url = search_tree(input("Target URL: "), url_tree)
     target_url["childs"] = crawler.crawl(target_url["url"])
 
-def print_url_tree(node, number="1", level=1):
+def print_url_tree(node=url_tree, number="1", level=1):
     spaces = ""
     for l in range(0, level):
         spaces += " "
@@ -52,6 +49,11 @@ def print_url_tree(node, number="1", level=1):
     if("childs" in node):
         for n, i in zip(node["childs"], range(0, len(node["childs"]))):
             print_url_tree(n, f"{number}.{i+1}", level+1)
+
+def print_params():
+    target_url = search_tree(input("Target URL: "), url_tree)
+    for param in target_url["params"]:
+        print(param)
 
 def search_tree(number, node):
     split_number = number.split(".")
