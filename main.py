@@ -33,11 +33,10 @@ def print_menu():
 
 def fuzzing():
     print("Available URLs: ")
-    print(f"1. {url_tree["url"]}")
-    target_url = input("Target URL: ")
+    print_url_tree(url_tree)
+    target_url = search_tree(input("Target URL: "), url_tree)
     wordlist_path = input("Wordlist: ")
-    target_url = url_tree["url"]
-    fuzzer.fuzz(target_url, wordlist_path)
+    fuzzer.fuzz(target_url["url"], wordlist_path)
 
 def crawling():
     target_url = search_tree(input("Target URL: "), url_tree)
