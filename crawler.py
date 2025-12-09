@@ -39,4 +39,13 @@ def crawl(url, cookies):
 
     return child_urls
 
+def crawl_one(target_url, cookies):
+    target_url["childs"] = crawl(target_url["url"], cookies)
+
+def crawl_all(node, cookies):
+    if("childs" in node):
+        for child_node in node["childs"]:
+            crawl_all(child_node, cookies)
+    else:
+        crawl_one(node, cookies)
 

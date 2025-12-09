@@ -21,3 +21,13 @@ def exception_safe_request(target, payload, cookies):
             return requests.get(f'{target}/{payload}/', cookies=cookies, timeout=5)
         except:
             sleep(1)
+
+def fuzzing(target_url, fuzzing_wordlist, cookies):
+    if(not fuzzing_wordlist or len(fuzzing_wordlist) == 0):
+        fuzzing_wordlist = input("Wordlist: ")
+
+    print()
+        
+    fuzz(target_url["url"], fuzzing_wordlist, cookies)
+
+    print()

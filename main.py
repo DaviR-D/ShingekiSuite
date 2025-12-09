@@ -1,7 +1,10 @@
+from session import *
+from visual import *
+from crawler import *
+from fuzzer import *
 import argparse
-import json
-import fuzzer
-import crawler
+
+
 
 url_tree = dict()
 fuzzing_wordlist = ""
@@ -32,12 +35,29 @@ def load_args():
     fuzzing_wordlist = args.fuzzer_wordlist
 
     if(args.import_session):
-        import_url_tree(args.import_session)
+        import_session(url_tree=url_tree, import_file=args.import_session)
+
+def handle_option(option):
+    global url_tree
+    global fuzzing_wordlist
+    global cookies
+
+    handle = {
+    0: lambda: print(),
+    1: lambda: fuzzing(search_tree(input("Target URL: "), url_tree), fuzzing_wordlist, cookies),
+    2: lambda: crawl_one(search_tree(input("Target URL: "), url_tree), cookies),
+    3: lambda: print_url_tree(current_node=url_tree),
+    4: lambda: print_params(search_tree(input("Target URL: "), url_tree)),
+    5: lambda: print_url_tree(current_node=url_tree, include_params=True),
+    6: lambda: crawl_all(node=url_tree, cookies=cookies),
+    7: lambda: export_session(url_tree=url_tree),
+    8: lambda: import_session(url_tree),
+}
+    
+    handle[int(option)]()
 
 
 def main():
-    methods = [print, fuzzing, craw_one, print_url_tree, print_params, print_urls_params, crawl_all, save_url_tree, import_url_tree]
-
     load_args()
 
     option = 99
@@ -47,70 +67,10 @@ def main():
 
         option = input("Choice: ")
 
+        print()
 
-        methods[int(option)]()
-            
+        handle_option(option)
 
-def print_menu():
-
-    print("1) Fuzz")
-    print("2) Crawl")
-    print("3) Show available URLs")
-    print("4) Print params")
-    print("5) Print URLs and params")
-    print("6) Crawl all URLs")
-    print("7) Export URL tree")
-    print("8) Import URL tree")
-    print("0) Exit")
-
-def fuzzing():
-    global fuzzing_wordlist
-    global cookies
-    
-    target_url = search_tree(input("Target URL: "), url_tree)
-
-    if(not fuzzing_wordlist or len(fuzzing_wordlist) == 0):
-        fuzzing_wordlist = input("Wordlist: ")
-        
-    fuzzer.fuzz(target_url["url"], fuzzing_wordlist, cookies)
-
-def craw_one():
-    global cookies
-
-    target_url = search_tree(input("Target URL: "), url_tree)
-    target_url["childs"] = crawler.crawl(target_url["url"], cookies)
-
-def crawl_all(node=url_tree):
-    global cookies
-
-    if("childs" in node):
-        for child_node in node["childs"]:
-            crawl_all(child_node)
-    else:
-        node["childs"] = crawler.crawl(node["url"], cookies)
-
-def print_url_tree(current_node=url_tree, node_number="1", identation = "", include_params=False):
-    print(f"{identation}{node_number}. {current_node["url"]}")
-
-    if(include_params):
-        print_params(current_node, identation=identation)
-
-    print()
-
-    if("childs" in current_node):
-        for child_node, index in zip(current_node["childs"], range(0, len(current_node["childs"]))):
-            print_url_tree(child_node, f"{node_number}.{index+1}", f"{identation}  ", include_params=include_params)
-
-def print_params(target_url=False, identation=""):
-    if(not target_url):
-        target_url = search_tree(input("Target URL: "), url_tree)
-
-    if("params" in target_url):    
-        for param in target_url["params"]:
-            print(f"{identation} {param}")
-
-def print_urls_params():
-    print_url_tree(include_params=True)
 
 def search_tree(number, node):
     index_array = number.split(".")
@@ -124,21 +84,6 @@ def search_tree(number, node):
         next_node = node["childs"][next_index]
 
         return search_tree(".".join(index_array), next_node)
-    
-def save_url_tree():
-    with open("output/url_tree.json", "w+", encoding="utf-8") as output:
-        json.dump(url_tree, output, ensure_ascii=False, indent=2)
-
-    print("Written in output/url_tree.json")
-
-def import_url_tree(import_file=None):
-    if(not import_file):
-        import_file = input("File to import: ")
-
-    with open(import_file, "r", encoding="utf-8") as file:
-        data = json.load(file)
-    url_tree.clear()
-    url_tree.update(data)
         
 if __name__ == "__main__":
     main()
