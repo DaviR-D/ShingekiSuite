@@ -18,6 +18,6 @@ def fuzz(target, wordlist_path, delay_time=0):
 def exception_safe_request(target, payload):
     while True:
         try:
-            return requests.get(f'{target}/{payload}', timeout=5)
+            return requests.get(f'{target}/{payload}/', timeout=5)
         except:
             sleep(1)

@@ -4,6 +4,7 @@ import fuzzer
 import crawler
 
 url_tree = dict()
+fuzzing_wordlist = ""
 
 def main():
     methods = [print, fuzzing, craw_one, print_url_tree, print_params, print_urls_params, crawl_all, save_url_tree, import_url_tree]
@@ -11,11 +12,16 @@ def main():
     option = 99
     parser = argparse.ArgumentParser(description="ShingekiSuite")
     parser.add_argument("-u", "--url", help="Target URL")
-    parser.add_argument("-if", "--import-file", help="Import previous session")
+    parser.add_argument("-is", "--import-session", help="Import previous session")
+    parser.add_argument("-fw", "--fuzzer-wordlist", help="Set fixed fuzzing wordlist")
     args = parser.parse_args()
+
     url_tree["url"] = args.url
-    if(args.import_file):
-        import_url_tree(args.import_file)
+    global fuzzing_wordlist
+    fuzzing_wordlist = args.fuzzer_wordlist
+
+    if(args.import_session):
+        import_url_tree(args.import_session)
 
     while option != "0":
         print_menu()
@@ -40,8 +46,13 @@ def print_menu():
 
 def fuzzing():
     target_url = search_tree(input("Target URL: "), url_tree)
-    wordlist_path = input("Wordlist: ")
-    fuzzer.fuzz(target_url["url"], wordlist_path)
+
+    global fuzzing_wordlist
+
+    if(len(fuzzing_wordlist) == 0):
+        fuzzing_wordlist = input("Wordlist: ")
+        
+    fuzzer.fuzz(target_url["url"], fuzzing_wordlist)
 
 def craw_one():
     target_url = search_tree(input("Target URL: "), url_tree)
@@ -99,7 +110,7 @@ def save_url_tree():
 def import_url_tree(import_file=None):
     if(not import_file):
         import_file = input("File to import: ")
-        
+
     with open(import_file, "r", encoding="utf-8") as file:
         data = json.load(file)
     url_tree.clear()
