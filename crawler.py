@@ -1,7 +1,8 @@
+from urllib.parse import urlparse
 import requests
 import re
 
-def crawl(url, cookies):
+def crawl(url, cookies, domain=""):
     child_urls = list()
     print()
     print("---------------------Root URL:---------------------")
@@ -17,10 +18,13 @@ def crawl(url, cookies):
         split_url = ref.split("?")
         child_url = split_url[0]
         if("http" not in child_url):
-            child_url = url + child_url
+            child_url = url + '/' + child_url
         query_params = split_url[-1].split("&")
 
         print()
+
+        if not (check_domain(url=child_url, domain=domain)):
+            continue
 
         print(f"------Child URL:------")
         print(child_url)
@@ -39,8 +43,8 @@ def crawl(url, cookies):
 
     return child_urls
 
-def crawl_one(target_url, cookies):
-    target_url["childs"] = crawl(target_url["url"], cookies)
+def crawl_one(target_url, cookies, domain=""):
+    target_url["childs"] = crawl(target_url["url"], cookies, domain=domain)
 
 def crawl_all(node, cookies):
     if("childs" in node):
@@ -48,4 +52,9 @@ def crawl_all(node, cookies):
             crawl_all(child_node, cookies)
     else:
         crawl_one(node, cookies)
+
+def check_domain(url, domain):
+    new_url_domain = urlparse(url).hostname
+
+    return new_url_domain == domain or new_url_domain.endswith(f'.{domain}') or domain == ''
 

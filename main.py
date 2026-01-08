@@ -9,13 +9,15 @@ import argparse
 url_tree = dict()
 fuzzing_wordlist = ""
 cookies = dict()
+domain = ""
 
 def add_args():
-    parser = argparse.ArgumentParser(description="ShingekiSuite")
-    parser.add_argument("-u", "--url", help="Target URL")
-    parser.add_argument("-is", "--import-session", help="Import previous session")
-    parser.add_argument("-fw", "--fuzzer-wordlist", help="Set fixed fuzzing wordlist")
-    parser.add_argument("-c", "--cookie", help="Cookie (key=value)", action="append")
+    parser = argparse.ArgumentParser(description="TeigekiSuite")
+    parser.add_argument("-u", "--url", help="Target URL", metavar="url")
+    parser.add_argument("-is", "--import-session", help="Import previous session", metavar="session")
+    parser.add_argument("-fw", "--fuzzer-wordlist", help="Set fixed fuzzing wordlist", metavar="wordlist")
+    parser.add_argument("-d", "--domain", help="Only crawl through URLs in this domain", metavar="domain")
+    parser.add_argument("-c", "--cookie", help="Cookie (key=value)", action="append", metavar="cookie")
     args = parser.parse_args()
 
     return args
@@ -23,6 +25,7 @@ def add_args():
 def load_args():
     global fuzzing_wordlist
     global url_tree
+    global domain
 
     args = add_args()
 
@@ -37,6 +40,9 @@ def load_args():
     if(args.import_session):
         import_session(url_tree=url_tree, import_file=args.import_session)
 
+    if(args.domain):
+        domain = args.domain
+
 def handle_option(option):
     global url_tree
     global fuzzing_wordlist
@@ -45,7 +51,7 @@ def handle_option(option):
     handle = {
     0: lambda: print(),
     1: lambda: fuzzing(search_tree(input("Target URL: "), url_tree), fuzzing_wordlist, cookies),
-    2: lambda: crawl_one(search_tree(input("Target URL: "), url_tree), cookies),
+    2: lambda: crawl_one(search_tree(input("Target URL: "), url_tree), cookies, domain=domain),
     3: lambda: print_url_tree(current_node=url_tree),
     4: lambda: print_params(search_tree(input("Target URL: "), url_tree)),
     5: lambda: print_url_tree(current_node=url_tree, include_params=True),
