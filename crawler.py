@@ -18,7 +18,7 @@ def crawl(url, cookies, domain=""):
         split_url = link.split("?")
         child_url = split_url[0]
         if("http" not in child_url):
-            child_url = url + '/' + child_url
+            child_url = 'https://' + urlparse(url).hostname + '/' + child_url
         query_params = split_url[-1].split("&")
 
         print()
