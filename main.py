@@ -2,6 +2,7 @@ from session import *
 from visual import *
 from crawler import *
 from fuzzer import *
+from url_tree_handler import *
 import argparse
 
 
@@ -34,6 +35,7 @@ def load_args():
         cookies[key] = value
 
     url_tree["url"] = args.url
+    url_tree['params'] = list()
 
     fuzzing_wordlist = args.fuzzer_wordlist
 
@@ -50,12 +52,12 @@ def handle_option(option):
 
     handle = {
     0: lambda: print(),
-    1: lambda: fuzzing(search_tree(input("Target URL: "), url_tree), fuzzing_wordlist, cookies),
-    2: lambda: crawl_one(search_tree(input("Target URL: "), url_tree), cookies, domain=domain),
+    1: lambda: fuzzing(find_node_by_number(input("Target URL: "), url_tree), fuzzing_wordlist, cookies),
+    2: lambda: crawl_one(find_node_by_number(input("Target URL: "), url_tree), cookies, url_tree=url_tree, domain=domain),
     3: lambda: print_url_tree(current_node=url_tree),
-    4: lambda: print_params(search_tree(input("Target URL: "), url_tree)),
+    4: lambda: print_params(find_node_by_number(input("Target URL: "), url_tree)),
     5: lambda: print_url_tree(current_node=url_tree, include_params=True),
-    6: lambda: crawl_all(node=url_tree, cookies=cookies),
+    6: lambda: crawl_all(node=url_tree, cookies=cookies, url_tree=url_tree, domain=domain),
     7: lambda: export_session(url_tree=url_tree),
     8: lambda: import_session(url_tree),
 }
@@ -78,18 +80,5 @@ def main():
         handle_option(option)
 
 
-def search_tree(number, node):
-    index_array = number.split(".")
-    index_array.pop(0)
-    
-    if(len(index_array) == 0):
-        return node
-    
-    else:
-        next_index = int(index_array[0]) - 1
-        next_node = node["childs"][next_index]
-
-        return search_tree(".".join(index_array), next_node)
-        
 if __name__ == "__main__":
     main()
