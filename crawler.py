@@ -3,7 +3,7 @@ import requests
 import re
 from url_tree_handler import find_node_by_url
 
-def crawl(url, cookies, url_tree, domain=""):
+def crawl(url, cookies, url_tree, domains=[]):
     child_urls = list()
     print("\n---------------------Root URL:---------------------")
     print(url)
@@ -40,7 +40,7 @@ def crawl(url, cookies, url_tree, domain=""):
 
         if not check_valid_url(new_url=child_url,
                                new_nodes=child_urls,
-                               domain=domain,
+                               domains=domains,
                                url_tree=url_tree,
                                query_params=query_params
                             ):
@@ -57,10 +57,10 @@ def crawl(url, cookies, url_tree, domain=""):
 
     return child_urls
 
-def crawl_one(node, cookies, url_tree, domain=""):
-    node["childs"] = crawl(node["url"], cookies, url_tree=url_tree, domain=domain)
+def crawl_one(node, cookies, url_tree, domains=[]):
+    node["childs"] = crawl(node["url"], cookies, url_tree=url_tree, domains=domains)
 
-def crawl_all(node, cookies, url_tree, domain='', visited=None):
+def crawl_all(node, cookies, url_tree, domains=[], visited=None):
 
     if visited is None:
         visited = set()
@@ -72,17 +72,24 @@ def crawl_all(node, cookies, url_tree, domain='', visited=None):
 
     if("childs" in node and len(node['childs']) > 0):
         for child_node in node["childs"]:
-            crawl_all(child_node, cookies, url_tree=url_tree, domain=domain, visited=visited)
+            crawl_all(child_node, cookies, url_tree=url_tree, domains=domains, visited=visited)
     else:
-        crawl_one(node, cookies, url_tree=url_tree, domain=domain)
+        crawl_one(node, cookies, url_tree=url_tree, domains=domains)
 
-def check_domain(url, domain):
+def check_domain(url, domains):
+    if not domains:
+        return True
+
     new_url_domain = urlparse(url).hostname
 
-    return new_url_domain == domain or new_url_domain.endswith(f'.{domain}') or domain == ''
+    for domain in domains:
+        if(new_url_domain == domain or new_url_domain.endswith(f'.{domain}')):
+            return True
+        
+    return False
 
-def check_valid_url(new_url, new_nodes, domain, url_tree, query_params):
-    if not (check_domain(url=new_url, domain=domain)):
+def check_valid_url(new_url, new_nodes, domains, url_tree, query_params):
+    if not (check_domain(url=new_url, domains=domains)):
         return False
 
     for node in new_nodes:
@@ -100,6 +107,6 @@ def check_valid_url(new_url, new_nodes, domain, url_tree, query_params):
         
     return True
 
-def deep_crawl(depth, cookies, url_tree, domain=''):
+def deep_crawl(depth, cookies, url_tree, domains=[]):
     for i in range(0, depth):
-        crawl_all(node=url_tree, cookies=cookies, url_tree=url_tree, domain=domain)
+        crawl_all(node=url_tree, cookies=cookies, url_tree=url_tree, domains=domains)

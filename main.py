@@ -11,14 +11,14 @@ import argparse
 url_tree = dict()
 fuzzing_wordlist = ""
 cookies = dict()
-domain = ""
+domains = list()
 
 def add_args():
     parser = argparse.ArgumentParser(description="TeigekiSuite")
     parser.add_argument("-u", "--url", help="Target URL", metavar="url")
     parser.add_argument("-is", "--import-session", help="Import previous session", metavar="session")
     parser.add_argument("-fw", "--fuzzer-wordlist", help="Set fixed fuzzing wordlist", metavar="wordlist")
-    parser.add_argument("-d", "--domain", help="Only crawl through URLs in this domain", metavar="domain")
+    parser.add_argument("-d", "--domain", help="Only crawl through URLs in the specified domains (multiple uses supported)", action="append", metavar="domain")
     parser.add_argument("-c", "--cookie", help="Cookie (key=value)", action="append", metavar="cookie")
     parser.add_argument("-a", "--auto-recon", help="Perform deafult automatic recon", action="store_true")
     args = parser.parse_args()
@@ -28,7 +28,7 @@ def add_args():
 def load_args():
     global fuzzing_wordlist
     global url_tree
-    global domain
+    global domains
 
     args = add_args()
 
@@ -45,7 +45,7 @@ def load_args():
         import_session(url_tree=url_tree, import_file=args.import_session)
 
     if(args.domain):
-        domain = args.domain
+        domains = args.domain
 
     if(args.auto_recon):
         auto_recon()
@@ -61,12 +61,12 @@ def handle_option(option):
     handle = {
     0: lambda: print(),
     1: lambda: fuzzing(find_node_by_number(input("Target URL: "), url_tree), fuzzing_wordlist, cookies),
-    2: lambda: crawl_one(find_node_by_number(input("Target URL: "), url_tree), cookies, url_tree=url_tree, domain=domain),
+    2: lambda: crawl_one(find_node_by_number(input("Target URL: "), url_tree), cookies, url_tree=url_tree, domains=domains),
     3: lambda: print_url_tree(current_node=url_tree),
     4: lambda: print_params(find_node_by_number(input("Target URL: "), url_tree)),
     5: lambda: print_url_tree(current_node=url_tree, include_params=True),
-    6: lambda: crawl_all(node=url_tree, cookies=cookies, url_tree=url_tree, domain=domain),
-    7: lambda: deep_crawl(depth=int(input("Depth: ")), cookies=cookies, url_tree=url_tree, domain=domain),
+    6: lambda: crawl_all(node=url_tree, cookies=cookies, url_tree=url_tree, domains=domains),
+    7: lambda: deep_crawl(depth=int(input("Depth: ")), cookies=cookies, url_tree=url_tree, domains=domains),
     8: lambda: filter_scripts(node=url_tree),
     9: lambda: export_session(url_tree=url_tree),
     10: lambda: import_session(url_tree),
@@ -75,7 +75,7 @@ def handle_option(option):
     handle[int(option)]()
 
 def auto_recon():
-    deep_crawl(depth=2, cookies=cookies, url_tree=url_tree, domain=domain)
+    deep_crawl(depth=3, cookies=cookies, url_tree=url_tree, domains=domains)
     filter_scripts(node=url_tree)
     print("\n\nAll javascript code saved in output/scripts.js")
     export_session(url_tree=url_tree)
