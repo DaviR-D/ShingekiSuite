@@ -7,8 +7,6 @@ def filter_scripts(node):
     if("childs" in node):
         for child_node in node["childs"]:
             filter_scripts(child_node)
-        
-    return None
 
 def save_script(url):
     try:
@@ -19,5 +17,5 @@ def save_script(url):
         return
 
     if response.status_code == 200:
-        with open("output/scripts.txt", "a", encoding="utf-8") as f:
+        with open("output/scripts.js", "a", encoding="utf-8") as f:
             f.write(response.text + '\n\n')

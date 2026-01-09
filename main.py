@@ -20,6 +20,7 @@ def add_args():
     parser.add_argument("-fw", "--fuzzer-wordlist", help="Set fixed fuzzing wordlist", metavar="wordlist")
     parser.add_argument("-d", "--domain", help="Only crawl through URLs in this domain", metavar="domain")
     parser.add_argument("-c", "--cookie", help="Cookie (key=value)", action="append", metavar="cookie")
+    parser.add_argument("-a", "--auto-recon", help="Perform deafult automatic recon", action="store_true")
     args = parser.parse_args()
 
     return args
@@ -46,6 +47,12 @@ def load_args():
     if(args.domain):
         domain = args.domain
 
+    if(args.auto_recon):
+        auto_recon()
+        return '0'
+
+    return 0
+
 def handle_option(option):
     global url_tree
     global fuzzing_wordlist
@@ -59,18 +66,22 @@ def handle_option(option):
     4: lambda: print_params(find_node_by_number(input("Target URL: "), url_tree)),
     5: lambda: print_url_tree(current_node=url_tree, include_params=True),
     6: lambda: crawl_all(node=url_tree, cookies=cookies, url_tree=url_tree, domain=domain),
-    7: lambda: filter_scripts(node=url_tree),
-    8: lambda: export_session(url_tree=url_tree),
-    9: lambda: import_session(url_tree),
+    7: lambda: deep_crawl(depth=int(input("Depth: ")), cookies=cookies, url_tree=url_tree, domain=domain),
+    8: lambda: filter_scripts(node=url_tree),
+    9: lambda: export_session(url_tree=url_tree),
+    10: lambda: import_session(url_tree),
 }
     
     handle[int(option)]()
 
+def auto_recon():
+    deep_crawl(depth=2, cookies=cookies, url_tree=url_tree, domain=domain)
+    filter_scripts(node=url_tree)
+    print("\n\nAll javascript code saved in output/scripts.js")
+    export_session(url_tree=url_tree)
 
 def main():
-    load_args()
-
-    option = 99
+    option = load_args()
 
     while option != "0":
         print_menu()

@@ -70,7 +70,7 @@ def crawl_all(node, cookies, url_tree, domain='', visited=None):
     
     visited.add(node['url'].rstrip("/"))
 
-    if("childs" in node):
+    if("childs" in node and len(node['childs']) > 0):
         for child_node in node["childs"]:
             crawl_all(child_node, cookies, url_tree=url_tree, domain=domain, visited=visited)
     else:
@@ -99,3 +99,7 @@ def check_valid_url(new_url, new_nodes, domain, url_tree, query_params):
         return False
         
     return True
+
+def deep_crawl(depth, cookies, url_tree, domain=''):
+    for i in range(0, depth):
+        crawl_all(node=url_tree, cookies=cookies, url_tree=url_tree, domain=domain)
