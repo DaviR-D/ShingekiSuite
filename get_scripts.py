@@ -1,4 +1,5 @@
 import requests
+import re
 
 def filter_scripts(node):
     if(node['url'].endswith(".js")):
@@ -17,5 +18,7 @@ def save_script(url):
         return
 
     if response.status_code == 200:
-        with open("output/scripts.js", "a", encoding="utf-8") as f:
-            f.write(response.text + '\n\n')
+        formatted_url = re.sub(r'[^a-zA-Z0-9_.-]', '-', url)
+        print(url)
+        with open(f"output/{formatted_url}", "a", encoding="utf-8") as f:
+            f.write(f"//{url}\n\n" + response.text)
